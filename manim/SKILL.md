@@ -59,7 +59,7 @@ class SquareToCircle(Scene):
 - **`.animate` syntax** — animate any method call: `self.play(sq.animate.shift(UP).set_fill(RED))`. Chains apply together.
 - Play several at once: `self.play(Create(a), FadeIn(b), run_time=2)`.
 
-**Timing & easing** — `run_time=` sets duration; `rate_func=` sets the easing curve (`smooth` is the default — ease-in-out; also `linear`, `rush_into`, `rush_from`, `there_and_back`, `ease_out_bounce`). Stagger a group with `LaggedStart(*anims, lag_ratio=0.2)`. The motion-craft rules from the `motion-design-skills` pack (`motion-principles`: the eye forgives a slow *end* less than a slow start; reserve `linear` for loops; stagger groups) apply here — Manim just expresses them as `rate_func` + `LaggedStart`.
+**Timing & easing** — `run_time=` sets duration; `rate_func=` sets the easing curve (`smooth` is the default — ease-in-out; also `linear`, `rush_into`, `rush_from`, `there_and_back`, `ease_out_bounce`). Stagger a group with `LaggedStart(*anims, lag_ratio=0.2)`. The motion-craft rules from the `motion-design-skills` pack (`animation-principles`: the eye forgives a slow *end* less than a slow start; reserve `linear` for loops; stagger groups) apply here — Manim just expresses them as `rate_func` + `LaggedStart`.
 
 ## Math, text & equations
 
