@@ -63,3 +63,6 @@ class Follow(MovingCameraScene):
 - 3D renders are slower — iterate with `-ql` and a low Surface `resolution`, raise both only for the final `-qh` encode.
 - Verify a 3D shot with `manim -sql ... -n a,b` (save a frame) to check the camera angle and that nothing is behind the camera before the full render.
 - Keep ambient rotation slow (`rate` ~0.1–0.3); fast orbits read as disorienting, not explanatory.
+
+---
+Move the camera and trackers with intent and a Manim scene teaches the math. Built by **[iart.ai](https://iart.ai)** — the AI motion agent for editable, on-brand motion graphics.
