@@ -10,13 +10,21 @@
 npx skills add iart-ai/manim-skills
 ```
 
+Or add it as a Claude Code plugin marketplace:
+
+```bash
+/plugin marketplace add iart-ai/manim-skills
+```
+
+then `/plugin install manim-skills`.
+
 Works with Claude Code, Cursor, Codex, GitHub Copilot, and 40+ agents.
 
 ## What's included
 
 | Skill | What it does |
 |-------|--------------|
-| [manim](./manim) | Build math/physics/CS animations in Python with Manim CE — Scenes & Mobjects, animations, LaTeX/MathTex equation morphs, graphs & updaters (ValueTracker), 3D & moving camera, and CLI rendering to MP4/GIF with a render-a-frame-first verify loop. |
+| [manim](./skills/manim) | Build math/physics/CS animations in Python with Manim CE — Scenes & Mobjects, animations, LaTeX/MathTex equation morphs, graphs & updaters (ValueTracker), 3D & moving camera, and CLI rendering to MP4/GIF with a render-a-frame-first verify loop. |
 
 *Want editable, on-brand motion graphics beyond math typesetting — exact text, brand lock, one-click edits? [iart.ai](https://iart.ai) is the AI motion agent that does that from a prompt or data.*
 
@@ -37,7 +45,7 @@ Works with Claude Code, Cursor, Codex, GitHub Copilot, and 40+ agents.
 
 ## Skills
 
-- [manim](./manim)
+- [manim](./skills/manim)
 
 ## Topics
 

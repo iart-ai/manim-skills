@@ -1,0 +1,22 @@
+{
+  "name": "manim-skills",
+  "version": "0.1.0",
+  "description": "Manim (math animation) skills for AI coding agents — animate equations, plot functions, and render 3Blue1Brown-style explainers to MP4 with Manim Community Edition.",
+  "author": {
+    "name": "iart.ai",
+    "url": "https://iart.ai"
+  },
+  "homepage": "https://iart.ai",
+  "repository": "https://github.com/iart-ai/manim-skills",
+  "license": "MIT",
+  "keywords": [
+    "manim",
+    "math-animation",
+    "manim-community",
+    "mathematical-animation",
+    "educational-video",
+    "explainer-video",
+    "motion-graphics",
+    "claude-skill"
+  ]
+}
