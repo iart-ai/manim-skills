@@ -75,6 +75,8 @@ class SquareToCircle(Scene):
 
 ## Deliver & verify (rendered frame → MP4)
 
+> **Packaged helper** (`scripts/`): tile your stills with `scripts/contact-sheet.sh sheet.png f-hook.png f-mid.png f-end.png`, then assert the encode with `scripts/probe-mp4.sh out.mp4 [WxH] [fps]`. See `scripts/README.md`.
+
 Manim is deterministic — the same scene renders the same frames — so verify by rendering **frames** (PNG, no video encode) before committing to the full video. Use this whenever the output is a math clip MP4/GIF.
 
 **Output contract:**
