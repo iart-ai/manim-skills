@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manim · Math in Motion · GSAP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,500&family=Inter:wght@500;700;900&family=STIX+Two+Text:ital,wght@0,500;0,700;1,500&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,500&family=Inter:wght@500;700;900&family=STIX+Two+Text:ital,wght@0,500;0,700;1,500&display=swap"></noscript>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --navy:   #0b1226;
+    --navy2:  #060a18;
+    --teal:   #58c4dd;   /* classic 3b1b blue */
+    --blue:   #4f7cff;
+    --yellow: #ffd166;
+    --green:  #83c167;
+    --pink:   #ff6e9c;
+    --ink:    #e8eefc;
+    --grid:   rgba(120,150,210,0.18);
+    --gridhi: rgba(140,180,240,0.42);
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--navy);
+    font-family: 'Inter', sans-serif;
+  }
+
+  #stage {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(130% 120% at 50% 40%, #101a36 0%, var(--navy) 50%, var(--navy2) 100%);
+    overflow: hidden;
+  }
+
+  /* math canvas: grid, axes, curve, morph */
+  #math {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .scene {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    will-change: transform, opacity;
+    z-index: 6;
+  }
+
+  .line {
+    display: flex;
+    gap: 0 0.02em;
+    justify-content: center;
+    align-items: baseline;
+    padding: 0.05em 0;
+  }
+
+  .word {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(2.2rem, 9vw, 7rem);
+    line-height: 0.98;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    white-space: nowrap;
+    will-change: transform, opacity;
+  }
+  .char { display: inline-block; will-change: transform, opacity; }
+
+  .teal   { color: var(--teal); }
+  .blue   { color: var(--blue); }
+  .yellow { color: var(--yellow); }
+  .green  { color: var(--green); }
+  .pink   { color: var(--pink); }
+
+  .kicker {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: clamp(0.65rem, 1.5vw, 0.95rem);
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    color: var(--teal);
+    text-indent: 0.42em;
+  }
+
+  /* LaTeX-like equation */
+  .eq {
+    font-family: 'STIX Two Text', serif;
+    font-weight: 500;
+    font-size: clamp(1.8rem, 7vw, 5.2rem);
+    color: var(--ink);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .eq .op  { color: var(--teal); }
+  .eq .var { font-style: italic; }
+  .eq .num { color: var(--yellow); }
+  .eq sup  { font-size: 0.6em; vertical-align: super; }
+  .eq sub  { font-size: 0.6em; vertical-align: sub; }
+
+  .mega {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(2.8rem, 13vw, 10rem);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+  }
+
+  .brandmark {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    text-transform: lowercase;
+    font-size: clamp(2.6rem, 14vw, 11rem);
+    line-height: 0.86;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .brandmark .teal { color: var(--teal); }
+
+  /* point dot that traces the curve */
+  #dot {
+    position: fixed;
+    width: 18px; height: 18px;
+    margin: -9px 0 0 -9px;
+    border-radius: 50%;
+    background: var(--yellow);
+    box-shadow: 0 0 18px rgba(255,209,102,.8), 0 0 40px rgba(255,209,102,.4);
+    z-index: 5;
+    opacity: 0;
+    will-change: transform;
+  }
+
+  /* transition overlay panels */
+  #fx { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
+  .panel { position: absolute; will-change: transform; visibility: hidden; }
+
+  #flash {
+    position: fixed; inset: 0;
+    background: var(--teal);
+    opacity: 0; pointer-events: none; z-index: 50;
+    mix-blend-mode: screen;
+  }
+
+  .grain {
+    position: fixed; inset: 0; pointer-events: none;
+    opacity: 0.05; mix-blend-mode: overlay; z-index: 60;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  #progress {
+    position: fixed; left: 0; bottom: 0;
+    height: 3px; width: 100%;
+    transform: scaleX(0); transform-origin: left;
+    background: linear-gradient(90deg, var(--teal), var(--blue), var(--yellow));
+    box-shadow: 0 0 10px rgba(88,196,221,.6);
+    z-index: 70;
+  }
+
+  .ui {
+    position: fixed;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    z-index: 80;
+    color: #8fa3cf;
+  }
+  #brand { top: 22px; left: 24px; color: #9fb6e6; }
+  #replay {
+    bottom: 18px; right: 22px;
+    background: rgba(16,26,54,.5);
+    border: 1.5px solid rgba(88,196,221,.4);
+    border-radius: 999px;
+    padding: 9px 18px;
+    cursor: pointer;
+    color: #bfe6f0;
+    backdrop-filter: blur(4px);
+    transition: color .2s, border-color .2s, background .2s, box-shadow .2s;
+  }
+  #replay:hover { color: var(--navy); background: var(--teal); border-color: var(--teal); box-shadow: 0 0 18px rgba(88,196,221,.5); }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="math"></canvas>
+
+    <!-- Scene 1 : title -->
+    <div class="scene" id="s1">
+      <div class="line"><span class="kicker">Animated&nbsp;&nbsp;Mathematics</span></div>
+      <div class="line"><span class="word">Visualize</span></div>
+      <div class="line"><span class="word teal">the&nbsp;invisible</span></div>
+    </div>
+
+    <!-- Scene 2 : axes / plot label -->
+    <div class="scene" id="s2">
+      <div class="line"><span class="word teal">PLOT</span></div>
+      <div class="line"><span class="kicker">f(x) = sin(x)</span></div>
+    </div>
+
+    <!-- Scene 3 : morph label -->
+    <div class="scene" id="s3">
+      <div class="line"><span class="word yellow">MORPH</span></div>
+      <div class="line"><span class="kicker">circle&nbsp;&nbsp;→&nbsp;&nbsp;polygon</span></div>
+    </div>
+
+    <!-- Scene 4 : equation writes on -->
+    <div class="scene" id="s4">
+      <div class="line"><span class="eq"><span class="op">e</span><sup><span class="op">i</span><span class="var">π</span></sup>&nbsp;<span class="op">+</span>&nbsp;<span class="num">1</span>&nbsp;<span class="op">=</span>&nbsp;<span class="num">0</span></span></div>
+      <div class="line"><span class="kicker">Euler's&nbsp;&nbsp;Identity</span></div>
+    </div>
+
+    <!-- Scene 5 : bridge -->
+    <div class="scene" id="s5">
+      <div class="line"><span class="word mega teal">PROVE</span></div>
+      <div class="line"><span class="word mega yellow">IT</span></div>
+    </div>
+
+    <!-- Scene 6 : finale -->
+    <div class="scene" id="s6">
+      <div class="line"><span class="word mega">MATH IN MOTION</span></div>
+      <div class="line"><span class="word brandmark">iart<span class="teal">.</span>ai</span></div>
+    </div>
+  </div>
+
+  <div id="dot"></div>
+
+  <div id="fx">
+    <div class="panel" id="p1"></div>
+    <div class="panel" id="p2"></div>
+    <div class="panel" id="p3"></div>
+    <div class="panel" id="p4"></div>
+  </div>
+
+  <div id="flash"></div>
+  <div class="grain"></div>
+  <div id="progress"></div>
+  <div class="ui" id="brand">◆ iart.ai</div>
+  <button class="ui" id="replay">↻ Replay</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+/* ============================================================
+   MATH CANVAS  —  self-drawing grid, axes, function curve, morph
+   ============================================================ */
+const cv = document.getElementById('math');
+const ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+function resize() {
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = W * DPR; cv.height = H * DPR;
+  cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+/* coordinate system: math units -> screen pixels */
+function unit() { return Math.min(W, H) / 9; }   // px per unit
+function originX() { return W / 2; }
+function originY() { return H / 2; }
+function sx(x) { return originX() + x * unit(); }
+function sy(y) { return originY() - y * unit(); }
+
+/* state controlled by the GSAP timeline */
+const M = {
+  grid: 0,        // 0..1 grid draw progress (radial reveal)
+  axes: 0,        // 0..1 axes draw progress
+  curve: 0,       // 0..1 sine curve plot progress
+  morph: 0,       // 0..1 circle(0) -> polygon(1)
+  morphShow: 0,   // 0..1 morph shape opacity
+  curveShow: 1,   // curve opacity
+  gridFade: 1,    // overall grid opacity
+  rot: 0,         // morph rotation
+  dotX: 0, dotY: 0
+};
+
+const dotEl = document.getElementById('dot');
+
+function fmod(v) { return v - Math.floor(v); }
+
+function drawGrid() {
+  if (M.gridFade <= 0.001) return;
+  const u = unit(), ox = originX(), oy = originY();
+  const maxR = Math.hypot(W, H) / 2;
+  const reveal = M.grid * maxR;     // radial wipe radius
+  ctx.save();
+  ctx.globalAlpha = M.gridFade;
+  ctx.lineWidth = 1;
+
+  // minor grid
+  ctx.strokeStyle = getCss('--grid');
+  const cols = Math.ceil(W / u) + 2;
+  const rows = Math.ceil(H / u) + 2;
+  for (let i = -cols; i <= cols; i++) {
+    const x = ox + i * u;
+    // fade by distance from origin vs reveal radius
+    const d = Math.abs(i * u);
+    const a = clamp((reveal - d) / u, 0, 1);
+    if (a <= 0) continue;
+    ctx.globalAlpha = M.gridFade * a * 0.9;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let j = -rows; j <= rows; j++) {
+    const y = oy + j * u;
+    const d = Math.abs(j * u);
+    const a = clamp((reveal - d) / u, 0, 1);
+    if (a <= 0) continue;
+    ctx.globalAlpha = M.gridFade * a * 0.9;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawAxes() {
+  if (M.axes <= 0.001) return;
+  const u = unit();
+  ctx.save();
+  ctx.globalAlpha = M.gridFade;
+  ctx.strokeStyle = getCss('--gridhi');
+  ctx.lineWidth = 2;
+  // x axis grows from origin outward both directions
+  const halfW = (W / 2) * M.axes;
+  const halfH = (H / 2) * M.axes;
+  ctx.beginPath();
+  ctx.moveTo(originX() - halfW, originY());
+  ctx.lineTo(originX() + halfW, originY());
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(originX(), originY() - halfH);
+  ctx.lineTo(originX(), originY() + halfH);
+  ctx.stroke();
+
+  // tick marks
+  ctx.lineWidth = 1.5;
+  for (let i = -6; i <= 6; i++) {
+    if (i === 0) continue;
+    const x = sx(i);
+    if (Math.abs(x - originX()) > halfW) continue;
+    ctx.beginPath(); ctx.moveTo(x, originY() - 6); ctx.lineTo(x, originY() + 6); ctx.stroke();
+  }
+  for (let j = -4; j <= 4; j++) {
+    if (j === 0) continue;
+    const y = sy(j);
+    if (Math.abs(y - originY()) > halfH) continue;
+    ctx.beginPath(); ctx.moveTo(originX() - 6, y); ctx.lineTo(originX() + 6, y); ctx.stroke();
+  }
+  // arrow heads
+  if (M.axes > 0.95) {
+    const tip = originX() + halfW;
+    ctx.fillStyle = getCss('--gridhi');
+    ctx.beginPath();
+    ctx.moveTo(tip, originY()); ctx.lineTo(tip - 10, originY() - 5); ctx.lineTo(tip - 10, originY() + 5); ctx.closePath(); ctx.fill();
+    const tipy = originY() - halfH;
+    ctx.beginPath();
+    ctx.moveTo(originX(), tipy); ctx.lineTo(originX() - 5, tipy + 10); ctx.lineTo(originX() + 5, tipy + 10); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
+
+const sineFn = (x) => 2.2 * Math.sin(x);
+
+function drawCurve() {
+  if (M.curve <= 0.001 || M.curveShow <= 0.001) return;
+  const u = unit();
+  const xMin = -W / 2 / u, xMax = W / 2 / u;
+  const end = xMin + (xMax - xMin) * M.curve;
+  ctx.save();
+  ctx.globalAlpha = M.curveShow;
+  ctx.strokeStyle = getCss('--teal');
+  ctx.lineWidth = 3.5;
+  ctx.lineJoin = 'round';
+  ctx.shadowColor = 'rgba(88,196,221,0.6)';
+  ctx.shadowBlur = 14;
+  ctx.beginPath();
+  let first = true, lastX = 0, lastY = 0;
+  for (let x = xMin; x <= end; x += 0.02) {
+    const px = sx(x), py = sy(sineFn(x));
+    if (first) { ctx.moveTo(px, py); first = false; }
+    else ctx.lineTo(px, py);
+    lastX = px; lastY = py;
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  // trace dot rides the leading edge
+  if (M.curve > 0.001 && M.curve < 0.999 && M.curveShow > 0.5) {
+    dotEl.style.opacity = 1;
+    gsap.set(dotEl, { x: lastX, y: lastY });
+  }
+}
+
+function drawMorph() {
+  if (M.morphShow <= 0.001) return;
+  const u = unit();
+  const cx = originX(), cy = originY();
+  const R = u * 2.4;
+  const sides = 6;           // morph target = hexagon
+  const steps = 220;
+  ctx.save();
+  ctx.globalAlpha = M.morphShow;
+  ctx.translate(cx, cy);
+  ctx.rotate(M.rot);
+  ctx.strokeStyle = getCss('--yellow');
+  ctx.lineWidth = 3.5;
+  ctx.lineJoin = 'round';
+  ctx.shadowColor = 'rgba(255,209,102,0.55)';
+  ctx.shadowBlur = 16;
+  ctx.fillStyle = 'rgba(255,209,102,0.10)';
+  ctx.beginPath();
+  for (let i = 0; i <= steps; i++) {
+    const tt = i / steps;
+    const ang = tt * Math.PI * 2 - Math.PI / 2;
+    // circle radius
+    const rc = R;
+    // polygon radius for this angle (regular hexagon)
+    const seg = Math.PI * 2 / sides;
+    const a2 = ((ang + Math.PI / 2) % seg) - seg / 2;
+    const rp = R * Math.cos(seg / 2) / Math.cos(a2);
+    const r = rc * (1 - M.morph) + rp * M.morph;
+    const x = Math.cos(ang) * r;
+    const y = Math.sin(ang) * r;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // vertex dots
+  ctx.fillStyle = getCss('--yellow');
+  for (let k = 0; k < sides; k++) {
+    const ang = k * (Math.PI * 2 / sides) - Math.PI / 2;
+    const r = R;
+    ctx.globalAlpha = M.morphShow * M.morph;
+    ctx.beginPath();
+    ctx.arc(Math.cos(ang) * r, Math.sin(ang) * r, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+const _css = {};
+function getCss(name) {
+  if (!_css[name]) _css[name] = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return _css[name];
+}
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  drawGrid();
+  drawAxes();
+  drawCurve();
+  drawMorph();
+  if (M.curve >= 0.999 || M.curveShow <= 0.5) dotEl.style.opacity = 0;
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
+
+/* ============================================================
+   TEXT SPLITTING
+   ============================================================ */
+function splitChars(word) {
+  const text = word.textContent;
+  word.textContent = '';
+  const chars = [];
+  for (const ch of text) {
+    const span = document.createElement('span');
+    span.className = 'char';
+    span.innerHTML = (ch === ' ') ? '&nbsp;' : ch;
+    word.appendChild(span);
+    if (ch !== ' ') chars.push(span);
+  }
+  return chars;
+}
+document.querySelectorAll('.word:not(.brandmark)').forEach(splitChars);
+
+function splitBrand(el) {
+  const html = el.innerHTML;
+  el.innerHTML = '';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  tmp.childNodes.forEach(node => {
+    const isDot = node.nodeType === 1;
+    const text = node.textContent;
+    for (const ch of text) {
+      const span = document.createElement('span');
+      span.className = 'char' + (isDot ? ' teal' : '');
+      span.textContent = ch;
+      el.appendChild(span);
+    }
+  });
+}
+document.querySelectorAll('.brandmark').forEach(splitBrand);
+
+const charsOf = (sel) => gsap.utils.toArray(sel + ' .char');
+
+gsap.set('.scene', { autoAlpha: 0 });
+
+/* ============================================================
+   MASTER TIMELINE  (~7.8s, 6 beats, varied transitions)
+   ============================================================ */
+function build() {
+  // reset canvas state
+  M.grid = 0; M.axes = 0; M.curve = 0; M.morph = 0; M.morphShow = 0;
+  M.curveShow = 1; M.gridFade = 1; M.rot = 0;
+  dotEl.style.opacity = 0;
+
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+  tl.fromTo('#progress', { scaleX: 0 }, { scaleX: 1, duration: 7.8, ease: 'none' }, 0);
+
+  // ===== SCENE 1 (0.0 – 1.6) grid draws itself + title =====
+  tl.to(M, { grid: 1, duration: 1.4, ease: 'power2.inOut' }, 0)
+    .to(M, { gridFade: 0.55, duration: 0.6 }, 1.0);
+
+  tl.set('#s1', { autoAlpha: 1 }, 0.15)
+    .from('#s1 .kicker', { yPercent: 100, opacity: 0, duration: 0.55 }, 0.25)
+    .from(charsOf('#s1'), {
+      yPercent: 110, opacity: 0, filter: 'blur(6px)',
+      stagger: { each: 0.03, from: 'start' }, duration: 0.6
+    }, 0.35)
+    // TRANSITION 1 — IMPLODE: title collapses to a point
+    .to(charsOf('#s1').concat(gsap.utils.toArray('#s1 .kicker')), {
+      scale: 0, rotation: 90, opacity: 0,
+      stagger: { each: 0.02, from: 'edges' }, duration: 0.45, ease: 'power3.in'
+    }, 1.2)
+    .set('#s1', { autoAlpha: 0 });
+
+  // ===== SCENE 2 (1.6 – 3.2) axes draw + sine curve plots =====
+  tl.to(M, { gridFade: 0.9, duration: 0.4 }, 1.55)
+    .to(M, { axes: 1, duration: 0.7, ease: 'power2.out' }, 1.6)
+    .to(M, { curve: 1, duration: 1.3, ease: 'none' }, 2.0);
+
+  tl.set('#s2', { autoAlpha: 1 }, 1.7)
+    .from(charsOf('#s2'), {
+      yPercent: 120, opacity: 0, skewY: 6,
+      stagger: 0.05, duration: 0.5
+    }, 1.75)
+    .from('#s2 .kicker', { opacity: 0, x: -20, duration: 0.5 }, 2.05)
+    // push label up out of the way while the curve finishes plotting
+    .to('#s2', { y: -H * 0.30, scale: 0.7, duration: 0.7, ease: 'power2.inOut' }, 2.3)
+    .to('#s2', { autoAlpha: 0, duration: 0.3 }, 3.25);
+
+  // TRANSITION 2 — COLOR-BAND WIPE: stacked bands sweep across the cut
+  const bands = ['#p1','#p2','#p3'];
+  const bandColors = ['var(--teal)','var(--blue)','var(--yellow)'];
+  gsap.set(bands, {
+    visibility: 'visible', left: '-5%', width: '110%', height: '120%',
+    top: 0, skewY: -6, backgroundColor: (i) => bandColors[i],
+    yPercent: 130, opacity: 0.95
+  });
+  tl.to(bands, { yPercent: -130, duration: 0.6, stagger: 0.08, ease: 'power3.inOut' }, 3.25);
+  // fade out curve/axes behind the bands so scene 3 is clean
+  tl.to(M, { curveShow: 0, duration: 0.3 }, 3.45)
+    .set(M, { curve: 0 }, 3.85)
+    .set(bands, { visibility: 'hidden' }, 3.95);
+
+  // ===== SCENE 3 (3.5 – 4.9) circle morphs into polygon =====
+  tl.set(M, { morphShow: 0, morph: 0, rot: 0 }, 3.5)
+    .to(M, { morphShow: 1, duration: 0.4 }, 3.6)
+    .to(M, { morph: 1, duration: 0.9, ease: 'power2.inOut' }, 3.85)
+    .to(M, { rot: Math.PI * 0.5, duration: 1.1, ease: 'sine.inOut' }, 3.85);
+
+  tl.set('#s3', { autoAlpha: 1 }, 3.6)
+    .from(charsOf('#s3'), {
+      scale: 0.3, opacity: 0, filter: 'blur(8px)',
+      stagger: { each: 0.04, from: 'center' }, duration: 0.5, ease: 'back.out(1.7)'
+    }, 3.62)
+    .from('#s3 .kicker', { opacity: 0, y: 16, duration: 0.5 }, 3.95)
+    .to('#s3', { y: -H * 0.28, scale: 0.7, duration: 0.6, ease: 'power2.inOut' }, 4.2)
+    .to(charsOf('#s3'), { opacity: 0, yPercent: -40, stagger: 0.02, duration: 0.3, ease: 'power2.in' }, 4.6)
+    .set('#s3', { autoAlpha: 0 });
+
+  // TRANSITION 3 — IRIS wipe: aperture closes on the morph, opens on equation
+  gsap.set('#p4', {
+    visibility: 'visible', left: '50%', top: '50%',
+    width: '160vmax', height: '160vmax', xPercent: -50, yPercent: -50,
+    borderRadius: '50%', background: 'transparent',
+    boxShadow: '0 0 0 100vmax #0b1226', scale: 1
+  });
+  tl.to('#p4', { scale: 0, duration: 0.34, ease: 'power3.in' }, 4.68)
+    .to(M, { morphShow: 0, duration: 0.2 }, 4.7)
+    .to('#p4', { scale: 1, duration: 0.42, ease: 'power3.out' }, 5.02)
+    .set('#p4', { visibility: 'hidden' }, 5.45);
+
+  // ===== SCENE 4 (5.0 – 5.9) equation writes on =====
+  tl.to(M, { gridFade: 0.35, duration: 0.5 }, 5.0);
+  tl.set('#s4', { autoAlpha: 1 }, 5.0)
+    .from('#s4 .eq', { opacity: 0, duration: 0.2 }, 5.02)
+    .from('#s4 .eq > *', {
+      opacity: 0, y: 24, filter: 'blur(5px)', scale: 0.6,
+      transformOrigin: '50% 100%',
+      stagger: 0.09, duration: 0.45, ease: 'back.out(1.6)'
+    }, 5.05)
+    .from('#s4 .kicker', { opacity: 0, y: 14, duration: 0.5 }, 5.4)
+    .to('#s4 .eq', { scale: 1.04, duration: 0.4, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 5.55)
+    .to('#s4', { autoAlpha: 0, scale: 0.9, duration: 0.3, ease: 'power2.in' }, 5.85)
+    .set('#s4', { autoAlpha: 0 });
+
+  // TRANSITION 4 — WHIP-PAN blur across the cut
+  tl.to('#stage', { x: -90, filter: 'blur(7px)', duration: 0.16, ease: 'power2.in' }, 5.88)
+    .set('#stage', { x: 100 }, 6.04)
+    .to('#stage', { x: 0, filter: 'blur(0px)', duration: 0.34, ease: 'power3.out' }, 6.04);
+
+  // ===== SCENE 5 (6.0 – 6.7) PROVE IT bridge =====
+  tl.set('#s5', { autoAlpha: 1 }, 6.04)
+    .from('#s5 .line:nth-child(1) .char', {
+      yPercent: 120, opacity: 0, stagger: 0.04, duration: 0.45
+    }, 6.06)
+    .from('#s5 .line:nth-child(2) .char', {
+      scale: 2.2, opacity: 0, stagger: 0.04, duration: 0.4, ease: 'back.out(2)'
+    }, 6.25)
+    .to(charsOf('#s5'), {
+      opacity: 0, yPercent: -60, filter: 'blur(8px)',
+      stagger: 0.02, duration: 0.3, ease: 'power2.in'
+    }, 6.55)
+    .set('#s5', { autoAlpha: 0 });
+
+  // TRANSITION 5 — CURTAIN: navy panels close & part to reveal finale
+  gsap.set('#p1', { visibility: 'visible', top: 0, left: 0,   width: '50.5%', height: '100%', backgroundColor: 'var(--navy2)', borderRight: '2px solid rgba(88,196,221,.5)', xPercent: -100, skewY: 0, opacity: 1 });
+  gsap.set('#p2', { visibility: 'visible', top: 0, left: '50%', width: '50.5%', height: '100%', backgroundColor: 'var(--navy2)', borderLeft: '2px solid rgba(88,196,221,.5)', xPercent: 100, skewY: 0, opacity: 1 });
+  tl.to(['#p1','#p2'], { xPercent: 0, duration: 0.3, ease: 'power3.in' }, 6.55)
+    .to(M, { grid: 1, gridFade: 0.6, duration: 0.4 }, 6.7)
+    .to('#p1', { xPercent: -100, duration: 0.45, ease: 'power4.out' }, 6.9)
+    .to('#p2', { xPercent: 100, duration: 0.45, ease: 'power4.out' }, 6.9)
+    .set(['#p1','#p2'], { visibility: 'hidden' }, 7.4);
+
+  // ===== SCENE 6 (6.9 – 7.8) finale lockup =====
+  tl.set('#s6', { autoAlpha: 1 }, 6.92)
+    .from(charsOf('#s6 .mega'), {
+      yPercent: 110, opacity: 0, filter: 'blur(6px)',
+      stagger: { each: 0.03, from: 'start' }, duration: 0.65, ease: 'back.out(1.5)'
+    }, 6.95)
+    .from(charsOf('#s6 .brandmark'), {
+      scale: 0.3, opacity: 0, filter: 'blur(8px)',
+      stagger: { each: 0.05, from: 'center' }, duration: 0.7, ease: 'back.out(1.8)'
+    }, 7.25)
+    .from('#s6 .brandmark .teal', { scale: 0, duration: 0.5, ease: 'back.out(3)' }, 7.6)
+    .to('#s6 .brandmark .teal', { scale: 1.3, duration: 0.4, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 7.55);
+
+  // soft flash on reveal
+  tl.to('#flash', { opacity: 0.28, duration: 0.06 }, 6.92)
+    .to('#flash', { opacity: 0, duration: 0.3 }, 6.98);
+
+  tl.to({}, { duration: 0.5 }); // hold
+  return tl;
+}
+
+let master = build();
+
+document.getElementById('replay').addEventListener('click', () => {
+  master.kill();
+  // reset canvas + scenes (reseed visuals)
+  M.grid = 0; M.axes = 0; M.curve = 0; M.morph = 0; M.morphShow = 0;
+  M.curveShow = 1; M.gridFade = 1; M.rot = 0;
+  dotEl.style.opacity = 0;
+  gsap.set('.scene', { clearProps: 'all', autoAlpha: 0 });
+  gsap.set('#stage', { x: 0, filter: 'blur(0px)' });
+  master = build();
+  master.restart();
+});
+</script>
+</body>
+</html>

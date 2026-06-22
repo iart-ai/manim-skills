@@ -2,6 +2,8 @@
 
 > Manim (math animation) skills for AI coding agents — animate equations, plot functions, and render 3Blue1Brown-style explainers to MP4 with Manim Community Edition.
 
+![Manim Skills — animated showcase](./showcase.gif)
+
 ## Install
 
 ```bash
