@@ -25,4 +25,4 @@ Build math/physics/CS animations in Python with Manim Community Edition — the 
 - `references/3d-and-camera.md` — `ThreeDScene`, `set_camera_orientation`, `ThreeDAxes`/`Surface`, ambient camera rotation, and `MovingCameraScene`.
 
 ---
-Part of **[Manim Skills](../)** · Built by **[iart.ai](https://iart.ai)** — controllable Motion Graphics MP4 from a prompt or data.
+Part of **[Manim Skills](../)** · Built by **[iart.ai](https://iart.ai)** — the AI motion agent for editable, on-brand motion graphics.
