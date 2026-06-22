@@ -65,4 +65,4 @@ class Follow(MovingCameraScene):
 - Keep ambient rotation slow (`rate` ~0.1–0.3); fast orbits read as disorienting, not explanatory.
 
 ---
-Move the camera and trackers with intent and a Manim scene teaches the math. Built by **[iart.ai](https://iart.ai)** — the AI motion agent for editable, on-brand motion graphics.
+Move the camera and trackers with intent and a Manim scene teaches the math. Built by **[iart.ai](https://iart.ai/?utm_source=github&utm_medium=readme&utm_campaign=manim-skills&utm_content=skill_footer&utm_term=manim)** — the AI motion agent for editable, on-brand motion graphics.

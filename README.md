@@ -18,7 +18,7 @@ Or add it as a Claude Code plugin marketplace:
 
 then `/plugin install manim-skills`.
 
-The skills run in Claude Code, Cursor, Codex, and 40+ agents. The full agent runs at **[iart.ai](https://iart.ai)**.
+The skills run in Claude Code, Cursor, Codex, and 40+ agents. The full agent runs at **[iart.ai](https://iart.ai/?utm_source=github&utm_medium=readme&utm_campaign=manim-skills&utm_content=funnel)**.
 
 ## What's included
 
@@ -26,7 +26,7 @@ The skills run in Claude Code, Cursor, Codex, and 40+ agents. The full agent run
 |-------|--------------|
 | [manim](./skills/manim) | Build math/physics/CS animations in Python with Manim CE — Scenes & Mobjects, animations, LaTeX/MathTex equation morphs, graphs & updaters (ValueTracker), 3D & moving camera, and CLI rendering to MP4/GIF with a render-a-frame-first verify loop. |
 
-*Want editable, on-brand motion graphics beyond math typesetting — exact text, brand lock, one-click edits? [iart.ai](https://iart.ai) is the AI motion agent that does that from a prompt or data.*
+*Want editable, on-brand motion graphics beyond math typesetting — exact text, brand lock, one-click edits? [iart.ai](https://iart.ai/?utm_source=github&utm_medium=readme&utm_campaign=manim-skills&utm_content=link) is the AI motion agent that does that from a prompt or data.*
 
 ## When it activates
 
@@ -82,4 +82,4 @@ MIT
 
 ---
 
-Built by **[iart.ai](https://iart.ai)** — the AI motion agent: describe it in a prompt — or point it at a CSV or brand kit — and get editable, on-brand motion graphics with exact text and numbers, one-click edits, and batch export.
+Built by **[iart.ai](https://iart.ai/?utm_source=github&utm_medium=readme&utm_campaign=manim-skills&utm_content=footer)** — the AI motion agent: describe it in a prompt — or point it at a CSV or brand kit — and get editable, on-brand motion graphics with exact text and numbers, one-click edits, and batch export.
